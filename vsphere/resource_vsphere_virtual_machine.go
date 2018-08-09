@@ -272,6 +272,15 @@ func resourceVSphereVirtualMachineCreate(d *schema.ResourceData, meta interface{
 	if err != nil {
 		return err
 	}
+	host := d.Get("host_system_id").(string)
+	err = resourceVSphereVirtualMachineRead(d, meta)
+	if err != nil {
+		return err
+	}
+	err = d.Set("host_system_id", host)
+	if err != nil {
+		return err
+	}
 	if d.Get("host_system_id").(string) != vprops.Runtime.Host.Reference().Value {
 		if err = resourceVSphereVirtualMachineUpdateLocation(d, meta); err != nil {
 			return err
