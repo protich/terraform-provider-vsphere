@@ -266,6 +266,18 @@ func resourceVSphereVirtualMachineCreate(d *schema.ResourceData, meta interface{
 		}
 	}
 
+	// The host attribute of CreateVM_Task seems to be ignored in vCenter 6.7.
+	// Ensure that VMs are on the correct host and relocate if necessary.
+	vprops, err := virtualmachine.Properties(vm)
+	if err != nil {
+		return err
+	}
+	if d.Get("host_system_id").(string) != vprops.Runtime.Host.Reference().Value {
+		if err = resourceVSphereVirtualMachineUpdateLocation(d, meta); err != nil {
+			return err
+		}
+	}
+
 	// Wait for a routable address if we have been set to wait for one
 	err = virtualmachine.WaitForGuestNet(
 		client,
