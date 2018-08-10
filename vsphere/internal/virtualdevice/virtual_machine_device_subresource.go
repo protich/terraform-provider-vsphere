@@ -572,7 +572,7 @@ func NormalizeSCSIBus(l object.VirtualDeviceList, ct string, count int, st strin
 				return nil, nil, err
 			}
 			if cspec != nil {
-				spec = append(spec, cspec)
+				spec = append(spec, cspec...)
 			}
 			continue
 		}
@@ -591,11 +591,12 @@ func NormalizeSCSIBus(l object.VirtualDeviceList, ct string, count int, st strin
 
 // setSCSIBusSharing takes a BaseVirtualSCSIController, sets the sharing mode,
 // and applies that change to the VirtualDeviceList.
-func setSCSIBusSharing(l *object.VirtualDeviceList, ctlr types.BaseVirtualSCSIController, st string) (types.BaseVirtualDeviceConfigSpec, error) {
-	var cspec types.BaseVirtualDeviceConfigSpec
+func setSCSIBusSharing(l *object.VirtualDeviceList, ctlr types.BaseVirtualSCSIController, st string) ([]types.BaseVirtualDeviceConfigSpec, error) {
+	var cspec []types.BaseVirtualDeviceConfigSpec
 	if ctlr.GetVirtualSCSIController().SharedBus != types.VirtualSCSISharing(st) {
 		ctlr.GetVirtualSCSIController().SharedBus = types.VirtualSCSISharing(st)
-		cspec, err := object.VirtualDeviceList{ctlr.(types.BaseVirtualDevice)}.ConfigSpec(types.VirtualDeviceConfigSpecOperationEdit)
+		var err error
+		cspec, err = object.VirtualDeviceList{ctlr.(types.BaseVirtualDevice)}.ConfigSpec(types.VirtualDeviceConfigSpecOperationEdit)
 		if err != nil {
 			return nil, err
 		}
